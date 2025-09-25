@@ -6,8 +6,7 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js",
-    "lint": "echo \"(optional) add eslint\""
+    "start": "node src/server.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
