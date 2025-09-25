@@ -1,32 +1,30 @@
+import React from "react";
+import { View, Text, StyleSheet, SafeAreaView } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { View, Text, TouchableOpacity } from "react-native";
-import { colors } from "../theme/colors";
-import PrimaryButton from "../components/PrimaryButton";
 
-const slides = [
-  { h: "Welcome to SkillSync", p: "Your AI mentor for your career roadmap." },
-  { h: "Match your skills with jobs", p: "Analyze your resume vs job descriptions & get a Fit Score." },
-  { h: "Bridge the gap", p: "Find missing skills, keywords & learning resources. Privacy-first." }
-];
-
-export default function OnboardingScreen({ navigation }) {
-  const go = () => navigation.replace("Login");
+export default function WelcomeScreen() {
   return (
-    <LinearGradient colors={[colors.bgTop, colors.bgBottom]} style={{ flex: 1, padding: 24 }}>
-      <View style={{ flex: 1, justifyContent: "center" }}>
-        {slides.map((s, i) => (
-          <View key={i} style={{ marginBottom: 28 }}>
-            <Text style={{ color: colors.white, fontFamily: "Inter_700Bold", fontSize: 24 }}>{s.h}</Text>
-            <Text style={{ color: colors.text, marginTop: 6, fontFamily: "Inter_400Regular" }}>{s.p}</Text>
-          </View>
-        ))}
-      </View>
-      <View style={{ gap: 12 }}>
-        <PrimaryButton title="Continue" onPress={go} />
-        <TouchableOpacity onPress={go} style={{ alignItems: "center", paddingVertical: 8 }}>
-          <Text style={{ color: colors.textMuted, fontFamily: "Inter_500Medium" }}>Skip</Text>
-        </TouchableOpacity>
-      </View>
+    <LinearGradient colors={["#1064A3", "#042B56"]} start={{x:0,y:0}} end={{x:0,y:1}} style={styles.container}>
+      <SafeAreaView style={{flex:1}}>
+        <View style={styles.card}>
+          <Text style={styles.title}>Welcome to SkillSync AI</Text>
+          <Text style={styles.subtitle}>Your AI mentor for your career roadmap.</Text>
+        </View>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  card: {
+    backgroundColor: "#1B3469",
+    marginTop: 60,
+    marginHorizontal: 24,
+    borderRadius: 16,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+  },
+  title: { color: "#FFFFFF", fontSize: 20, fontWeight: "800" },
+  subtitle: { color: "#D5E2FF", marginTop: 6 },
+});
