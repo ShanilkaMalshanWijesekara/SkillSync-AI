@@ -1,92 +1,132 @@
-import React, { useEffect } from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+// src/screens/SplashScreen.js
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  StatusBar,
+  Image,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SplashScreen({ navigation }) {
-  useEffect(() => {
-    // Auto-navigate after a short delay (optional)
-    const timer = setTimeout(() => checkOnboarding(), 1800);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const checkOnboarding = async () => {
-    try {
-      const seen = await AsyncStorage.getItem("seen_onboarding");
-      if (seen) {
-        navigation.replace("MainTabs"); // Skip onboarding if already completed
-      } else {
-        navigation.replace("Onboarding");
-      }
-    } catch (error) {
-      console.warn("Error checking onboarding flag", error);
-      navigation.replace("Onboarding"); // fallback
-    }
-  };
+  const go = () => navigation.replace("Onboarding"); // go to Onboarding on button press only
 
   return (
     <LinearGradient
-      colors={["#2C90F5", "#001A3A"]}
-      style={{ flex: 1, paddingHorizontal: 24, paddingVertical: 40 }}
+      colors={["#f200ffa3", "#0B3D91", "#062552"]}
+      start={{ x: 0.2, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.container}
     >
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        {/* Top Section */}
-        <View style={{ alignItems: "center", marginTop: 100 }}>
-          <Text
-            style={{
-              fontSize: 36,
-              fontFamily: "Inter_700Bold",
-              color: "#fff",
-              marginBottom: 50,
-              textAlign: "center",
-            }}
-          >
-            SkillSync <Text style={{ color: "#0EF0FF" }}>AI</Text>
-          </Text>
+      <StatusBar barStyle="light-content" />
+      <SafeAreaView style={styles.safe}>
+        {/* decorative top blob */}
+        <LinearGradient
+          colors={["#BDAEFF", "transparent"]}
+          start={{ x: 0.2, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.topBlob}
+          pointerEvents="none"
+        />
 
+        {/* Brand near the top */}
+        <Text style={styles.brand}>
+          <Text style={{ fontWeight: "800" }}>SkillSync </Text>
+          <Text style={{ fontWeight: "900" }}>AI</Text>
+        </Text>
+
+        {/* Centered content area */}
+        <View style={styles.centerWrap}>
           <Image
-            source={require("../../assets/ai-logo.png")}
-            style={{
-              width: 230,
-              height: 230,
-              resizeMode: "contain",
-            }}
+            source={require("../../assets/ai-logo2.png")}
+            style={styles.hero}
+            resizeMode="contain"
           />
         </View>
 
-        {/* Bottom Button (Manual Option) */}
-        <TouchableOpacity
-          onPress={checkOnboarding}
-          style={{
-            backgroundColor: "#fff",
-            borderRadius: 50,
-            paddingVertical: 14,
-            paddingHorizontal: 100,
-            marginBottom: 30,
-            elevation: 4,
-            shadowColor: "#000",
-            shadowOpacity: 0.2,
-            shadowOffset: { width: 0, height: 2 },
-            shadowRadius: 4,
-          }}
-        >
-          <Text
-            style={{
-              color: "#000",
-              fontFamily: "Inter_600SemiBold",
-              fontSize: 16,
-            }}
-          >
-            Get Started
-          </Text>
-        </TouchableOpacity>
-      </View>
+        {/* Bottom button */}
+        <View style={styles.footer}>
+          <TouchableOpacity activeOpacity={0.9} onPress={go}>
+            <View style={styles.btnWrap}>
+              <Text style={styles.btnText}>Get Started</Text>
+              {/* soft glow underline */}
+              
+            </View>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  safe: { flex: 1, paddingTop: Platform.OS === "android" ? 24 : 0 },
+  topBlob: {
+    position: "absolute",
+    top: -110,
+    left: -40,
+    width: 320,
+    height: 220,
+    borderBottomLeftRadius: 220,
+    borderBottomRightRadius: 220,
+    opacity: 0.9,
+  },
+  brand: {
+    color: "rgba(255, 255, 255, 1)",
+    fontSize: 40,
+    textAlign: "left",
+    paddingHorizontal: 24,
+    marginTop: 12,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+    paddingTop: 70,
+    paddingLeft: 65,
+  },
+  // ---- centering the image properly ----
+  centerWrap: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    // keep some space so the brand and button don’t overlap
+    paddingTop: 1,
+    paddingBottom: 10,
+    
+  },
+  hero: {
+    width: 460,
+    height: 460,
+  },
+  // --------------------------------------
+  footer: {
+    alignItems: "center",
+    marginBottom: 28,
+  },
+  btnWrap: {
+    width: 280,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  btnText: { color: "#0E1A3A", fontWeight: "800", fontSize: 16 },
+  btnGlow: {
+    position: "absolute",
+    bottom: -8,
+    left: 20,
+    right: 20,
+    height: 6,
+    borderRadius: 8,
+    opacity: 0.9,
+  },
+});
