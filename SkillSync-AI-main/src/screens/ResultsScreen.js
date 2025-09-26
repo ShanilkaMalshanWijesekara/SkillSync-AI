@@ -54,13 +54,13 @@ export default function ResultsScreen({ route, navigation }) {
       : "Close! Add missing skills & keywords to improve your fit.";
 
   return (
-    <LinearGradient colors={["#0C1E40", "#0A3D7A", "#082247"]} style={{ flex: 1 }}>
+    <LinearGradient colors={["#2AA6F2", "#173D87", "#C333B7"]} style={{ flex: 1 }}>
       <ScrollView
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <Text style={{ color: "#fff", fontSize: 25, fontWeight: "700" ,alignItems:"center",textAlign:"center",marginBottom:20}}>
+        <Text style={{ color: "#fff", fontSize: 25, fontWeight: "700" ,alignItems:"center",textAlign:"center",marginBottom:20,marginTop:60}}>
           Your AI Mentor for Your Career Roadmap.
         </Text>
 

@@ -62,7 +62,7 @@ export default function CompareScreen({ navigation }) {
   const chipF = 12 * scale;
 
   return (
-    <LinearGradient colors={["#0B3F91", "#061E3A"]} style={{ flex: 1 }}>
+    <LinearGradient colors={["#2AA6F2", "#173D87", "#C333B7"]} style={{ flex: 1 }}>
      
       
 
