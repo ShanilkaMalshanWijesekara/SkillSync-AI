@@ -1,0 +1,31 @@
+{
+  "name": "skillsync-backend",
+  "version": "1.0.0",
+  "description": "Backend API for SkillSync AI app",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",        
+    "dev": "nodemon server.js",       
+    "lint": "echo \"No linting configured yet\""
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "keywords": [
+    "express",
+    "api",
+    "skillsync",
+    "backend"
+  ],
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
