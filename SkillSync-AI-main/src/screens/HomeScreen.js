@@ -1,173 +1,113 @@
-// src/screens/OnboardingScreen.js
-import React, { useMemo, useRef, useState, useCallback } from "react";
+// src/screens/HomeScreen.js
+import React, {
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import {
   View,
   Text,
   StyleSheet,
   SafeAreaView,
   Image,
-  FlatList,
   TouchableOpacity,
   Dimensions,
   StatusBar,
   Platform,
-  I18nManager,
+  FlatList,
+  ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
-const IS_RTL = I18nManager.isRTL;
+const { width: W } = Dimensions.get("window");
 
-/** -------- Slides / promo content -------- */
-const SLIDES = [
+/* ── Only the promo content changes ─────────────────────── */
+const PROMOS = [
   {
-    key: "s1",
+    key: "coins",
     title: "Set Your Target Coins\nFor Future",
     body:
       "EX : Our technology performing fast blockchain (mekata gelapena ekk dnnaaa)",
-    image: require("../../assets/4.png"),
+    image: require("../../assets/8.png"),
+    cta: "Get started",
   },
   {
-    key: "s2",
+    key: "skills",
     title: "Recommended Skills\nNow a days",
     body:
       "EX : Our technology performing fast blockchain (mekata gelapena ekk dnnaaa)",
-    image: require("../../assets/5.png"),
+    image: require("../../assets/6.png"),
+    cta: "Get started",
   },
   {
-    key: "s3",
+    key: "video",
     title: "Recommended YouTube\nVideo",
     body:
       "EX : Our technology performing fast blockchain (mekata gelapena ekk dnnaaa)",
-    image: require("../../assets/3.png"),
+    image: require("../../assets/7.png"),
+    cta: "Get started",
   },
 ];
 
-const CHIPS = ["TypeScript", "Unit testing (Jest)", "React Router", "Java", "UI/UX"];
+const CHIPS = [
+  "TypeScript",
+  "Unit testing (Jest)",
+  "React Router",
+  "Java",
+  "UI/UX",
+];
 
-/** -------- One pretty “promo card” inside a slide -------- */
-const PromoCard = ({ item, onStart }) => {
+/* ── Small card component to keep renderItem tiny ───────── */
+const PromoCard = ({ item, onPress }) => {
   return (
     <LinearGradient
-      colors={["#0B0B0B", "#1A1A1A"]}
+      colors={["#0c00f57e", "#67005d70" ,"#ff00e677" ]} // softer palette
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={st.card}
+      style={s.card}
     >
-      {/* right pink gradient rim */}
+      {/* faint accent rim */}
       <LinearGradient
-        colors={["#FF5AD3", "#AA4DFF"]}
+        colors={["#FF7DD6AA", "#A38BFF99"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={st.cardRim}
+        style={s.cardRim}
       />
-
-      {/* content row */}
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <View style={{ flex: 1, paddingRight: 8 }}>
-          <Text style={st.cardTitle}>{item.title}</Text>
-          <Text style={st.cardBody}>
+          <Text style={s.cardTitle}>{item.title}</Text>
+          <Text style={s.cardBody}>
             {item.body}{" "}
-            <Text style={{ color: "#79E0FF", textDecorationLine: "underline" }}>
+            <Text
+              style={{ color: "#79E0FF", textDecorationLine: "underline" }}
+            >
               (dnnaaa)
             </Text>
           </Text>
-
-          <TouchableOpacity onPress={onStart} activeOpacity={0.9} style={st.getBtn}>
-            <Text style={st.getBtnText}>Get started</Text>
+          <TouchableOpacity
+            onPress={() => onPress(item)}
+            activeOpacity={0.9}
+            style={s.getBtn}
+          >
+            <Text style={s.getBtnText}>{item.cta}</Text>
           </TouchableOpacity>
         </View>
 
-        <Image source={item.image} style={st.cardImg} resizeMode="contain" />
+        <Image source={item.image} style={s.cardImg} resizeMode="contain" />
       </View>
     </LinearGradient>
   );
 };
 
-/** -------- Whole slide (background, header, watermark, promo section, lists) -------- */
-const Slide = React.memo(function Slide({ item, slideIndex, total, onStart }) {
-  return (
-    <LinearGradient
-      colors={["#2AA6F2", "#173D87", "#C333B7"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={st.slide}
-    >
-      {/* middle curved ribbon */}
-      <View style={st.ribbonWrap}>
-        <LinearGradient
-          colors={["#4AC9FF", "#113C7F"]}
-          start={{ x: 0.2, y: 0 }}
-          end={{ x: 0.6, y: 1 }}
-          style={st.ribbon}
-        />
-      </View>
-
-      {/* top welcome pill */}
-      <View style={st.pill}>
-        <Text style={st.pillTitle}>Welcome to SkillSync</Text>
-        <Text style={st.pillSub}>Your AI mentor for your career roadmap.</Text>
-      </View>
-
-      {/* left watermark */}
-      <Text style={st.watermark}>SkillSync AI</Text>
-
-      {/* promo card */}
-      <PromoCard item={item} onStart={onStart} />
-
-      {/* dots under card */}
-      <View style={st.innerDots}>
-        {Array.from({ length: total }).map((_, i) => (
-          <View
-            key={i}
-            style={[st.dot, i === slideIndex ? st.dotActive : null]}
-          />
-        ))}
-      </View>
-
-      {/* languages header */}
-      <View style={st.sectionHeader}>
-        <Text style={st.sectionTitle}>Recommended Languages</Text>
-        <TouchableOpacity activeOpacity={0.85} style={st.viewAll}>
-          <Text style={st.viewAllText}>View all</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* chips */}
-      <View style={st.chipsRow}>
-        {CHIPS.map((c) => (
-          <View key={c} style={st.chip}>
-            <Text style={st.chipText}>{c}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* 2 rows of rounded placeholders (cards) */}
-      <View style={st.grid}>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <View key={i} style={[st.placeholder, (i + 1) % 3 === 0 && { marginRight: 0 }]} />
-        ))}
-      </View>
-
-      {/* bottom rounded placeholders */}
-      <View style={st.bottomPills}>
-        <View style={st.bottomPill} />
-        <View style={st.bottomPill} />
-        <View style={[st.bottomPill, { width: SCREEN_WIDTH * 0.42 }]} />
-      </View>
-    </LinearGradient>
-  );
-});
-
-export default function OnboardingScreen({ navigation }) {
-  const listRef = useRef(null);
-  const [index, setIndex] = useState(0);
+export default function HomeScreen({ navigation }) {
+  const promoRef = useRef(null);
+  const [active, setActive] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   const onViewableItemsChanged = useRef(({ viewableItems }) => {
-    if (viewableItems && viewableItems.length > 0) {
-      const next = viewableItems[0].index ?? 0;
-      setIndex(next);
-    }
+    if (viewableItems?.length) setActive(viewableItems[0].index ?? 0);
   }).current;
 
   const viewabilityConfig = useMemo(
@@ -176,177 +116,181 @@ export default function OnboardingScreen({ navigation }) {
   );
 
   const getItemLayout = useCallback(
-    (_data, i) => ({
-      length: SCREEN_WIDTH,
-      offset: SCREEN_WIDTH * i,
-      index: i,
-    }),
+    (_d, i) => ({ length: W - 32, offset: (W - 32) * i, index: i }),
     []
   );
 
-  const goNext = useCallback(() => {
-    if (index < SLIDES.length - 1) {
-      listRef.current?.scrollToIndex({ index: index + 1, animated: true });
-    } else {
-      navigation.replace("MainTabs"); // end of onboarding
-    }
-  }, [index, navigation]);
+  const onPromoPress = useCallback((item) => {
+    // e.g. navigation.navigate("Compare");
+  }, []);
 
-  const onSkip = useCallback(() => {
-    navigation.replace("MainTabs");
-  }, [navigation]);
-
-  const renderItem = useCallback(
-    ({ item, index: slideIdx }) => (
-      <Slide
-        item={item}
-        slideIndex={slideIdx}
-        total={SLIDES.length}
-        onStart={goNext}
-      />
-    ),
-    [goNext]
-  );
-
-  const keyExtractor = useCallback((it) => it.key, []);
-  const isLast = index === SLIDES.length - 1;
+  /* ── Auto-rotate promos every 4s (pauses while dragging) ─ */
+  useEffect(() => {
+    if (isDragging) return;
+    const id = setInterval(() => {
+      const next = (active + 1) % PROMOS.length;
+      promoRef.current?.scrollToIndex({ index: next, animated: true });
+      setActive(next);
+    }, 4000);
+    return () => clearInterval(id);
+  }, [active, isDragging]);
 
   return (
-    <SafeAreaView style={st.safe}>
+    <LinearGradient
+      colors={["#2AA6F2", "#173D87", "#C333B7"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={s.container}
+    >
       <StatusBar barStyle="light-content" />
-      <FlatList
-        ref={listRef}
-        horizontal
-        pagingEnabled
-        bounces={false}
-        showsHorizontalScrollIndicator={false}
-        data={SLIDES}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
-        getItemLayout={getItemLayout}
-        inverted={IS_RTL}
-      />
+      <SafeAreaView style={s.safe}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 28 }}>
+          {/* top welcome pill */}
+          <View style={s.pill}>
+            <Text style={s.pillTitle}>Welcome to SkillSync</Text>
+            <Text style={s.pillSub}>
+              Your AI mentor for your career roadmap.
+            </Text>
+          </View>
 
-      {/* footer controls */}
-      <View style={st.footer}>
-        <TouchableOpacity
-          style={st.cta}
-          activeOpacity={0.9}
-          onPress={goNext}
-          accessibilityRole="button"
-          accessibilityLabel={isLast ? "Get Started" : "Continue"}
-        >
-          <Text style={st.ctaText}>{isLast ? "Get Started" : "Continue"}</Text>
-        </TouchableOpacity>
+          {/* ── TOP BOX (only this changes) ───────────────── */}
+          <View style={{ marginTop: 14 }}>
+            <FlatList
+              ref={promoRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              data={PROMOS}
+              keyExtractor={(it) => it.key}
+              onViewableItemsChanged={onViewableItemsChanged}
+              viewabilityConfig={viewabilityConfig}
+              getItemLayout={getItemLayout}
+              contentContainerStyle={{ paddingHorizontal: 16 }}
+              onScrollBeginDrag={() => setIsDragging(true)}
+              onScrollEndDrag={() => setIsDragging(false)}
+              renderItem={({ item }) => (
+                <PromoCard item={item} onPress={onPromoPress} />
+              )}
+            />
 
-        <TouchableOpacity
-          style={{ marginTop: 8 }}
-          onPress={onSkip}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          accessibilityRole="button"
-          accessibilityLabel="Skip onboarding"
-        >
-          <Text style={st.skip}>Skip</Text>
-        </TouchableOpacity>
+            {/* small dots for the top box only */}
+            <View style={s.innerDots}>
+              {PROMOS.map((_, i) => (
+                <TouchableOpacity
+                  key={i}
+                  onPress={() =>
+                    promoRef.current?.scrollToIndex({ index: i, animated: true })
+                  }
+                  activeOpacity={0.8}
+                >
+                  <View style={[s.dot, i === active && s.dotActive]} />
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+          {/* ──────────────────────────────────────────────── */}
 
-        <View style={st.dots}>
-          {SLIDES.map((_, i) => (
-            <View key={i} style={[st.dot, i === index && st.dotActive]} />
-          ))}
-        </View>
-      </View>
-    </SafeAreaView>
+          {/* languages header */}
+          <View style={s.sectionHeader}>
+            <Text style={s.sectionTitle}>Recommended Languages</Text>
+            <TouchableOpacity activeOpacity={0.85} style={s.viewAll}>
+              <Text style={s.viewAllText}>View all</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* chips */}
+          <View style={s.chipsRow}>
+            {CHIPS.map((c) => (
+              <View key={c} style={s.chip}>
+                <Text style={s.chipText}>{c}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* 2 rows of placeholders */}
+          <View style={s.grid}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <View
+                key={i}
+                style={[s.placeholder, (i + 1) % 3 === 0 && { marginRight: 0 }]}
+              />
+            ))}
+          </View>
+
+          {/* bottom rounded pills */}
+          <View style={s.bottomPills}>
+            <View style={s.bottomPill} />
+            <View style={s.bottomPill} />
+            <View style={[s.bottomPill, { width: W * 0.42 }]} />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
-/* ------------------- styles ------------------- */
-const st = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: "#0B2D63",
-    paddingTop: Platform.OS === "android" ? 24 : 0,
-  },
-  slide: {
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT,
-    paddingHorizontal: 16,
-    paddingTop: 10,
-  },
+const s = StyleSheet.create({
+  container: { flex: 1 },
+  safe: { flex: 1, paddingTop: Platform.OS === "android" ? 24 : 0 },
 
-  /* curved ribbon */
-  ribbonWrap: { position: "absolute", top: SCREEN_HEIGHT * 0.16, left: 0, right: 0 },
-  ribbon: {
-    alignSelf: "center",
-    width: SCREEN_WIDTH * 0.58,
-    height: SCREEN_HEIGHT * 0.9,
-    borderRadius: SCREEN_WIDTH,
-  },
-
-  /* top welcome pill */
   pill: {
     alignSelf: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    marginTop: 45,
+    paddingVertical: 10,
+    paddingHorizontal: 26,
     backgroundColor: "#2F6DFF",
-    borderRadius: 18,
-    marginTop: 4,
+    borderRadius: 16,
     shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 6 },
     shadowRadius: 12,
     elevation: 3,
   },
-  pillTitle: { color: "#FFFFFF", fontWeight: "800", fontSize: 16, textAlign: "center" },
-  pillSub: { color: "#CFE3FF", fontSize: 12, textAlign: "center", marginTop: 2 },
-
-  /* watermark */
-  watermark: {
-    position: "absolute",
-    top: SCREEN_HEIGHT * 0.32,
-    left: -6,
-    color: "#C0DBFF33",
-    fontSize: 54,
-    fontWeight: "700",
-    transform: [{ rotate: "-90deg" }],
+  pillTitle: {
+    color: "#FFFFFF",
+    fontWeight: "800",
+    fontSize: 24,
+    textAlign: "center",
+  },
+  pillSub: {
+    color: "#CFE3FF",
+    fontSize: 12,
+    textAlign: "center",
+    marginTop: 2,
   },
 
-  /* promo card */
+  /* top promo card */
   card: {
-    marginTop: 16,
-    borderRadius: 18,
+    width: W - 32,
+    borderRadius: 16,
     padding: 12,
     overflow: "hidden",
+    marginHorizontal: 8,
   },
   cardRim: {
     position: "absolute",
-    right: -10,
-    top: -10,
-    bottom: -10,
-    width: 28,
-    borderRadius: 18,
-    opacity: 0.7,
+    right: -12,
+    top: -12,
+    bottom: -12,
+    width: 22,
+    borderRadius: 16,
+    opacity: 0.55,
   },
   cardTitle: {
     color: "#FFFFFF",
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "800",
     lineHeight: 22,
   },
-  cardBody: {
-    color: "#EAEFFD",
-    marginTop: 8,
-    fontSize: 12.5,
-  },
-  cardImg: { width: 118, height: 92, marginLeft: 6 },
+  cardBody: { color: "#EAEFFD", marginTop: 8, fontSize: 12.5 },
+  cardImg: { width: 110, height: 90, marginLeft: 6 },
   getBtn: {
     marginTop: 10,
     alignSelf: "flex-start",
-    backgroundColor: "#42D1FF",
+    backgroundColor: "#FFFFFF",
     borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
   },
   getBtnText: { color: "#0C1D42", fontWeight: "800", fontSize: 12.5 },
 
@@ -356,14 +300,26 @@ const st = StyleSheet.create({
     marginTop: 8,
     gap: 6,
   },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 8,
+    backgroundColor: "#D0D8F0",
+    opacity: 0.5,
+  },
+  dotActive: {
+    opacity: 1,
+    width: 18,
+    borderRadius: 10,
+    backgroundColor: "#FFFFFF",
+  },
 
-  /* sections */
   sectionHeader: {
-    marginTop: 10,
+    marginTop: 12,
+    paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 6,
   },
   sectionTitle: { color: "#FFFFFF", fontWeight: "700" },
   viewAll: {
@@ -379,15 +335,15 @@ const st = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
     marginTop: 8,
-    paddingHorizontal: 6,
+    paddingHorizontal: 16,
   },
   chip: {
-    backgroundColor: "#F6C752",
+    backgroundColor: "rgba(255,255,255,0.28)",
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 999,
   },
-  chipText: { color: "#0A2145", fontWeight: "700", fontSize: 12 },
+  chipText: { color: "#FFFFFF", fontWeight: "600", fontSize: 12 },
 
   grid: {
     marginTop: 10,
@@ -395,13 +351,13 @@ const st = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
     rowGap: 12,
-    paddingHorizontal: 6,
+    paddingHorizontal: 16,
   },
   placeholder: {
-    width: (SCREEN_WIDTH - 16 - 12 - 16) / 3, // 3 columns
-    height: 105,
-    borderRadius: 16,
-    backgroundColor: "rgba(255,255,255,0.2)",
+    width: (W - 16 * 2 - 12) / 3,
+    height: 100,
+    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.18)",
     marginRight: 6,
   },
 
@@ -410,49 +366,12 @@ const st = StyleSheet.create({
     justifyContent: "space-between",
     gap: 10,
     marginTop: 16,
-    paddingHorizontal: 6,
-    marginBottom: 90, // leave room for footer controls
+    paddingHorizontal: 16,
   },
   bottomPill: {
-    width: SCREEN_WIDTH * 0.26,
+    width: W * 0.26,
     height: 16,
     borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.25)",
-  },
-
-  /* global dots + footer */
-  footer: {
-    position: "absolute",
-    bottom: 18,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-  },
-  cta: {
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 28,
-    paddingVertical: 12,
-    borderRadius: 999,
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  ctaText: { color: "#0E1A3A", fontWeight: "800", fontSize: 15 },
-  skip: { color: "#FFFFFF", opacity: 0.9, fontWeight: "600", marginTop: 4 },
-  dots: { flexDirection: "row", gap: 7, marginTop: 6 },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 8,
-    backgroundColor: "#D0D8F0",
-    opacity: 0.6,
-  },
-  dotActive: {
-    opacity: 1,
-    width: 18,
-    borderRadius: 10,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "rgba(255,255,255,0.22)",
   },
 });
