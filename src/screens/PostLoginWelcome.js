@@ -149,7 +149,7 @@ const s = StyleSheet.create({
     position: "absolute",
     top: height * 0.37,
     left: -86,
-    color: "#9dcbff30",
+    color: "#9dcbff98",
     fontSize: 50,
     fontWeight: "900",
     transform: [{ rotate: "-90deg" }],

@@ -63,17 +63,14 @@ export default function CompareScreen({ navigation }) {
 
   return (
     <LinearGradient colors={["#0B3F91", "#061E3A"]} style={{ flex: 1 }}>
-      {/* Top bar */}
-      <View style={{ paddingTop: 12 + (Platform.OS === "ios" ? 24 : 6), paddingBottom: 10, paddingHorizontal: padH, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        <Text style={{ color: "#CFE3FF", fontSize: 12 * scale }}>6m</Text>
-        <Text style={{ color: "#CFE3FF", fontSize: 12 * scale }}>⋯</Text>
-      </View>
+     
+      
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView contentContainerStyle={{ paddingHorizontal: padH, paddingBottom: 90 }} keyboardShouldPersistTaps="handled">
           {/* Hero title */}
           <View style={{ marginBottom: 14 * scale }}>
-            <Text style={{ color: "#EAF2FF", fontSize: 25 * scale, fontWeight: "700",alignItems:"center",textAlign:"center",marginBottom:20}}>
+            <Text style={{ color: "#EAF2FF", fontSize: 25 * scale, fontWeight: "700",alignItems:"center",textAlign:"center",marginBottom:20,marginTop:70}}>
               Your AI Mentor for Your{"\n"}Career Roadmap
             </Text>
           </View>
