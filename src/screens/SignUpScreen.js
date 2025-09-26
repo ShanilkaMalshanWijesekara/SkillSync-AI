@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView,
   useWindowDimensions,
   Alert,
+  StyleSheet,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ImagePicker from "expo-image-picker";
@@ -30,24 +31,24 @@ const SCORE_SCALE = knobs.scale;
 const MIN_PASSWORD_FOR_OK = knobs.minPwdOk;
 
 /* ---------- OPTIONS ---------- */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ROLES = ["Frontend Developer","Backend Developer","Full-stack","Mobile","Data / AI","UI/UX"];
 
 export default function SignUpScreen({ navigation }) {
   const { height } = useWindowDimensions();
 
-  // --- Responsive scale: 1.0 around tall screens, ~0.85 on short screens
-  const scale = Math.max(0.82, Math.min(1.0, height / 820));
+  // responsive scale
+  const scale  = Math.max(0.82, Math.min(1.0, height / 820));
   const padH   = 24 * scale;
   const padTop = 28 * scale;
   const padBot = 36 * scale;
   const gapY   = 8  * scale;
-  const inputH = 44 * scale;
+  const inputH = 46 * scale;
   const titleF = 26 * scale;
   const subF   = 14 * scale;
   const bodyF  = 15 * scale;
   const hintF  = 11 * scale;
-  const btnH   = 44 * scale;
-  const iconSz = 42 * scale;
+  const btnH   = 46 * scale;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -59,51 +60,35 @@ export default function SignUpScreen({ navigation }) {
   const [allowAI, setAllowAI] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  // Profile photo state
+  // Profile photo
   const [photoUri, setPhotoUri] = useState(null);
   const [picking, setPicking] = useState(false);
 
-  // ✅ NEW API usage: mediaTypes is an ARRAY of ImagePicker.MediaType
   async function pickProfilePhoto() {
-  try {
-    setPicking(true);
+    try {
+      setPicking(true);
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (perm.status !== "granted") {
+        setPicking(false);
+        Alert.alert("Permission needed", "Please allow access to your photos.");
+        return;
+      }
 
-    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (perm.status !== "granted") {
+      const isNewAPI = !!ImagePicker.MediaType; // Expo SDK 51+
+      const options = isNewAPI
+        ? { mediaTypes: [ImagePicker.MediaType.images], allowsEditing: true, aspect: [1,1], quality: 0.8, exif: false }
+        : { mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1,1], quality: 0.8, exif: false };
+
+      const result = await ImagePicker.launchImageLibraryAsync(options);
       setPicking(false);
-      alert("Permission to access photos is required.");
-      return;
+      if (!result.canceled && result.assets?.length) {
+        setPhotoUri(result.assets[0].uri);
+      }
+    } catch (e) {
+      setPicking(false);
+      console.warn("Image pick error:", e);
     }
-
-    // ✅ Works with both old (~15.x) and new (>=17) APIs
-    const isNewAPI = !!ImagePicker.MediaType; // detect new API
-    const options = isNewAPI
-      ? {
-          mediaTypes: [ImagePicker.MediaType.images], // NEW API
-          allowsEditing: true,
-          aspect: [1, 1],
-          quality: 0.8,
-          exif: false,
-        }
-      : {
-          mediaTypes: ImagePicker.MediaTypeOptions.Images, // OLD API
-          allowsEditing: true,
-          aspect: [1, 1],
-          quality: 0.8,
-          exif: false,
-        };
-
-    const result = await ImagePicker.launchImageLibraryAsync(options);
-
-    setPicking(false);
-    if (!result.canceled && result.assets?.length) {
-      setPhotoUri(result.assets[0].uri);
-    }
-  } catch (e) {
-    setPicking(false);
-    console.warn("Image pick error:", e);
   }
-}
 
   function passwordStrength(p) {
     if (!p) return { score: 0, label: "Too weak" };
@@ -134,7 +119,7 @@ export default function SignUpScreen({ navigation }) {
   const readiness = useMemo(() => {
     let raw = 0;
     const nameOk = name.trim().length >= 2;
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const emailOk = EMAIL_RE.test(email);
     const confirmOk = pwd && pwd === pwd2;
     const roleOk = !!role;
     const goalOk = goal.trim().length >= 3;
@@ -151,7 +136,7 @@ export default function SignUpScreen({ navigation }) {
     return Math.max(0, Math.min(100, Math.round(biased)));
   }, [name, email, pwd, pwd2, role, goal, agree, pwdInfo.score]);
 
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const emailOk = EMAIL_RE.test(email);
   const canSubmit =
     agree &&
     emailOk &&
@@ -162,27 +147,37 @@ export default function SignUpScreen({ navigation }) {
     !!role &&
     goal.trim().length >= 3;
 
-  const onSignUp = () => navigation.replace("Onboarding");
+  const onSignUp = () => {
+    // TODO: wire to your backend register route; on success:
+    Alert.alert("Account created", "You can log in now.", [
+      { text: "OK", onPress: () => navigation.replace("Login") },
+    ]);
+  };
 
   return (
-    <LinearGradient colors={["#2C90F5", "#001A3A"]} style={{ flex: 1 }}>
+    <LinearGradient colors={["#e725f1ff", "#0B5EC9", "#0A1E46"]} style={{ flex: 1 }}>
+      {/* top curved accent */}
+      <LinearGradient
+        colors={["#ffc9fcff", "transparent"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.curve}
+        pointerEvents="none"
+      />
+
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
         keyboardVerticalOffset={60}
       >
         <ScrollView
-          contentContainerStyle={{
-            paddingHorizontal: padH,
-            paddingTop: padTop,
-            paddingBottom: padBot,
-          }}
+          contentContainerStyle={{ paddingHorizontal: padH, paddingTop: padTop, paddingBottom: padBot }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
           {/* Header */}
-          <View style={{ alignItems: "center", marginBottom: 50 * scale, marginTop: 80 }}>
-            <Text style={{ fontSize: titleF, color: "#fff", fontFamily: "Inter_700Bold" }}>
+          <View style={{ alignItems: "center", marginBottom: 40 * scale, marginTop: 60 }}>
+            <Text style={{ fontSize: titleF, color: "#fff", fontWeight: "800" }}>
               Create your account
             </Text>
             <Text style={{ marginTop: 6 * scale, color: "rgba(255,255,255,0.85)", fontSize: subF }}>
@@ -241,14 +236,7 @@ export default function SignUpScreen({ navigation }) {
           <TouchableOpacity
             onPress={() => setPickerOpen(true)}
             activeOpacity={0.85}
-            style={[
-              styles.inputBox,
-              {
-                height: inputH,
-                marginBottom: gapY,
-                paddingHorizontal: 14 * scale,
-              },
-            ]}
+            style={[styles.inputBox, { height: inputH, marginBottom: gapY, paddingHorizontal: 14 * scale }]}
           >
             <Text style={{ color: role ? "#fff" : "rgba(255,255,255,0.8)", fontSize: bodyF }}>
               {role || "Role/Interest"}
@@ -271,52 +259,29 @@ export default function SignUpScreen({ navigation }) {
                 paddingHorizontal: 14 * scale,
                 fontSize: bodyF,
                 marginBottom: 6 * scale,
+                backgroundColor: "rgba(255,255,255,0.35)",
               },
             ]}
           />
           <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: hintF, marginTop: 4 * scale, marginLeft: 6 }}>
-            [Short text e.g., “Frontend Developer”]
+            [Short text (e.g., “Frontend Developer”)]
           </Text>
 
           {/* Profile photo uploader */}
           <View style={{ marginTop: 10 * scale }}>
             {photoUri ? (
-              <View
-                style={[
-                  styles.inputBox,
-                  {
-                    paddingHorizontal: 14 * scale,
-                    paddingVertical: 12 * scale,
-                    backgroundColor: "rgba(255,255,255,0.20)",
-                  },
-                ]}
-              >
+              <View style={[styles.inputBox, { paddingHorizontal: 14 * scale, paddingVertical: 12 * scale, backgroundColor: "rgba(255,255,255,0.20)" }]}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Image
-                    source={{ uri: photoUri }}
-                    style={{
-                      width: Math.max(72 * scale, 60),
-                      height: Math.max(72 * scale, 60),
-                      borderRadius: 12,
-                      marginRight: 12 * scale,
-                    }}
-                  />
+                  <Image source={{ uri: photoUri }} style={{ width: Math.max(72 * scale, 60), height: Math.max(72 * scale, 60), borderRadius: 12, marginRight: 12 * scale }} />
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: "#EAF2FF", marginBottom: 6 * scale, fontSize: 13 * scale }}>
                       Selected Profile Picture
                     </Text>
                     <View style={{ flexDirection: "row", gap: 10 * scale }}>
-                      <TouchableOpacity
-                        onPress={pickProfilePhoto}
-                        disabled={picking}
-                        style={{ paddingVertical: 8 * scale, paddingHorizontal: 12 * scale, backgroundColor: "#ffffff", borderRadius: 8, opacity: picking ? 0.7 : 1 }}
-                      >
+                      <TouchableOpacity onPress={pickProfilePhoto} disabled={picking} style={{ paddingVertical: 8 * scale, paddingHorizontal: 12 * scale, backgroundColor: "#ffffff", borderRadius: 8, opacity: picking ? 0.7 : 1 }}>
                         <Text style={{ color: "#0A2345", fontWeight: "600" }}>Change</Text>
                       </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={() => setPhotoUri(null)}
-                        style={{ paddingVertical: 8 * scale, paddingHorizontal: 12 * scale, borderWidth: 1, borderColor: "rgba(255,255,255,0.7)", borderRadius: 8 }}
-                      >
+                      <TouchableOpacity onPress={() => setPhotoUri(null)} style={{ paddingVertical: 8 * scale, paddingHorizontal: 12 * scale, borderWidth: 1, borderColor: "rgba(255,255,255,0.7)", borderRadius: 8 }}>
                         <Text style={{ color: "#EAF2FF" }}>Remove</Text>
                       </TouchableOpacity>
                     </View>
@@ -324,25 +289,12 @@ export default function SignUpScreen({ navigation }) {
                 </View>
               </View>
             ) : (
-              <Pressable
-                onPress={pickProfilePhoto}
-                disabled={picking}
-                style={[
-                  styles.inputBox,
-                  {
-                    height: Math.max(72 * scale, 60),
-                    alignItems: "center",
-                    justifyContent: "center",
-                    paddingHorizontal: 14 * scale,
-                    opacity: picking ? 0.6 : 1,
-                  },
-                ]}
-              >
+              <Pressable onPress={pickProfilePhoto} disabled={picking} style={[styles.inputBox, { height: Math.max(72 * scale, 60), alignItems: "center", justifyContent: "center", paddingHorizontal: 14 * scale, opacity: picking ? 0.6 : 1 }]}>
                 <View style={{ alignItems: "center" }}>
                   <Text style={{ color: "#EAF2FF", marginBottom: 6 * scale, fontSize: 13 * scale }}>
-                    Tap to upload profile photo
+                    Profile Picture Upload
                   </Text>
-                  <Image source={require("../../assets/upload.png")} style={{ width: 40 * scale, height: 40 * scale ,}} />
+                  <Image source={require("../../assets/upload.png")} style={{ width: 40 * scale, height: 40 * scale }} />
                 </View>
               </Pressable>
             )}
@@ -352,11 +304,7 @@ export default function SignUpScreen({ navigation }) {
           <CheckboxRow
             checked={agree}
             onToggle={() => setAgree(!agree)}
-            label={
-              <Text style={{ color: "#EAF2FF", fontSize: 14 * scale,}}>
-                I agree to the <Text style={{ textDecorationLine: "underline" }}>Terms & Privacy Policy</Text>.
-              </Text>
-            }
+            label={<Text style={{ color: "#EAF2FF", fontSize: 14 * scale }}>I agree to the <Text style={{ textDecorationLine: "underline" }}>Terms & Privacy Policy</Text>.</Text>}
             scale={scale}
           />
           <CheckboxRow
@@ -368,62 +316,41 @@ export default function SignUpScreen({ navigation }) {
 
           {/* Readiness */}
           <View style={{ marginTop: 12 * scale }}>
-            <Text style={{ color: "#EAF2FF", marginBottom: 6 * scale, fontFamily: "Inter_600SemiBold", fontSize: 14 * scale ,marginTop:6}}>
+            <Text style={{ color: "#EAF2FF", marginBottom: 6 * scale, fontSize: 14 * scale }}>
               Readiness Score: {readiness} / 100
             </Text>
             <View style={{ height: 10, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 999 }}>
-              <View
-                style={{
-                  height: 10,
-                  width: `${readiness}%`,
-                  backgroundColor: readiness >= 70 ? "#22c55e" : readiness >= 50 ? "#f59e0b" : "#ef4444",
-                  borderRadius: 999,
-                }}
-              />
+              <View style={{ height: 10, width: `${readiness}%`, backgroundColor: readiness >= 70 ? "#22c55e" : readiness >= 50 ? "#f59e0b" : "#ef4444", borderRadius: 999 }} />
             </View>
           </View>
 
           {/* Submit */}
-          <TouchableOpacity
-            onPress={onSignUp}
-            disabled={!canSubmit}
-            style={{
-              height: btnH,
-              borderRadius: 10,
-              backgroundColor: "#fff",
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: 20 * scale,
-              opacity: canSubmit ? 1 : 0.6,
-            }}
-          >
-            <Text style={{ color: "#0A2345", fontFamily: "Inter_700Bold", fontSize: 16 * scale }}>
-              Sign Up
-            </Text>
+          <TouchableOpacity onPress={onSignUp} disabled={!canSubmit} style={[styles.submitBtn, { height: btnH, opacity: canSubmit ? 1 : 0.6 }]}>
+            <Text style={{ color: "#0A2345", fontWeight: "800", fontSize: 16 * scale }}>Sign Up</Text>
           </TouchableOpacity>
 
           {/* Divider */}
           <View style={{ flexDirection: "row", alignItems: "center", marginTop: 16 * scale }}>
-            <View style={{ flex: 1, height: 1, backgroundColor: "rgba(255,255,255,0.3)" }} />
-            <Text style={{ marginHorizontal: 12 * scale, color: "#fff", fontSize: 16 * scale }}>Or Login with</Text>
-            <View style={{ flex: 1, height: 1, backgroundColor: "rgba(255,255,255,0.3)" }} />
+            <View style={styles.line} />
+            <Text style={{ marginHorizontal: 12 * scale, color: "#fff", fontSize: 15 * scale }}>Or Login with</Text>
+            <View style={styles.line} />
           </View>
 
-          {/* Icons only */}
+          {/* Social icons */}
           <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 12 * scale, gap: 60 * scale }}>
             <TouchableOpacity activeOpacity={0.9}>
-                          <Image source={require("../../assets/google.png")} style={{ width: 50, height: 50 }} />
-                        </TouchableOpacity>
+              <Image source={require("../../assets/google.png")} style={{ width: 50, height: 50 }} />
+            </TouchableOpacity>
             <TouchableOpacity activeOpacity={0.9}>
-                          <Image source={require("../../assets/facebook.png")} style={{ width: 50, height: 50 }} />
-                        </TouchableOpacity>
+              <Image source={require("../../assets/facebook.png")} style={{ width: 50, height: 50 }} />
+            </TouchableOpacity>
           </View>
 
           {/* Footer */}
-          <View style={{ alignItems: "center", marginTop: 35 * scale }}>
+          <View style={{ alignItems: "center", marginTop: 28 * scale }}>
             <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 14 * scale }}>
               Already have an account?{" "}
-              <Text onPress={() => navigation.navigate("Login")} style={{ textDecorationLine: "underline", color: "#fff", fontFamily: "Inter_600SemiBold" }}>
+              <Text onPress={() => navigation.navigate("Login")} style={{ textDecorationLine: "underline", color: "#fff", fontWeight: "700" }}>
                 Login Now
               </Text>
             </Text>
@@ -433,12 +360,12 @@ export default function SignUpScreen({ navigation }) {
 
       {/* Role picker */}
       <Modal transparent visible={pickerOpen} animationType="fade" onRequestClose={() => setPickerOpen(false)}>
-        <Pressable style={modalStyles.backdrop} onPress={() => setPickerOpen(false)}>
-          <View style={modalStyles.sheet}>
-            <Text style={modalStyles.title}>Select Role/Interest</Text>
+        <Pressable style={styles.backdrop} onPress={() => setPickerOpen(false)}>
+          <View style={styles.sheet}>
+            <Text style={styles.sheetTitle}>Select Role/Interest</Text>
             {ROLES.map((r) => (
-              <Pressable key={r} onPress={() => { setRole(r); setPickerOpen(false); }} style={modalStyles.item}>
-                <Text style={modalStyles.itemText}>{r}</Text>
+              <Pressable key={r} onPress={() => { setRole(r); setPickerOpen(false); }} style={styles.sheetItem}>
+                <Text style={styles.sheetItemText}>{r}</Text>
               </Pressable>
             ))}
           </View>
@@ -448,7 +375,7 @@ export default function SignUpScreen({ navigation }) {
   );
 }
 
-/* ---------- Reusable pieces (responsive) ---------- */
+/* ---------- Reusable pieces ---------- */
 function Field({ inputH, bodyF, gapY, ...props }) {
   return (
     <TextInput
@@ -481,7 +408,7 @@ function ValidatedField({ placeholder, value, onChangeText, secure, ok, errorTex
 function CheckboxRow({ checked, onToggle, label, scale }) {
   const box = 20 * scale;
   return (
-    <TouchableOpacity onPress={onToggle} style={{ flexDirection: "row", alignItems: "center", gap: 10 * scale, marginTop: 8 * scale }}>
+    <TouchableOpacity onPress={onToggle} style={{ flexDirection: "row", alignItems: "center", gap: 10 * scale, marginTop: 10 * scale }}>
       <View style={{ width: box, height: box, borderRadius: 4, borderWidth: 2, borderColor: "rgba(255,255,255,0.85)", alignItems: "center", justifyContent: "center", backgroundColor: checked ? "#2A6EF5" : "transparent" }}>
         {checked ? <Text style={{ color: "#fff", fontSize: 14 * scale }}>✓</Text> : null}
       </View>
@@ -491,7 +418,17 @@ function CheckboxRow({ checked, onToggle, label, scale }) {
 }
 
 /* ---------- Base styles ---------- */
-const styles = {
+const styles = StyleSheet.create({
+  curve: {
+    position: "absolute",
+    top: -120,
+    left: -60,
+    width: 420,
+    height: 230,
+    borderBottomLeftRadius: 300,
+    borderBottomRightRadius: 300,
+    opacity: 0.9,
+  },
   inputBox: {
     borderRadius: 10,
     color: "#fff",
@@ -500,12 +437,19 @@ const styles = {
     flexDirection: "row",
     alignItems: "center",
   },
-};
+  submitBtn: {
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
+  },
+  line: { flex: 1, height: 1, backgroundColor: "rgba(255,255,255,0.3)" },
 
-const modalStyles = {
+  // modal
   backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "center", padding: 24 },
-  sheet: { backgroundColor: "#0f172a", borderRadius: 14, padding: 12 },
-  title: { color: "EAF2FF", fontSize: 16, margin: 8, textAlign: "center" },
-  item: { paddingVertical: 10, paddingHorizontal: 12, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)" },
-  itemText: { color: "#EAF2FF", fontSize: 15 },
-};
+  sheet: { backgroundColor: "#0f172a", borderRadius: 14, paddingVertical: 10 },
+  sheetTitle: { color: "#EAF2FF", fontSize: 16, marginVertical: 8, textAlign: "center", fontWeight: "700" },
+  sheetItem: { paddingVertical: 12, paddingHorizontal: 16, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)" },
+  sheetItemText: { color: "#EAF2FF", fontSize: 15 },
+});
