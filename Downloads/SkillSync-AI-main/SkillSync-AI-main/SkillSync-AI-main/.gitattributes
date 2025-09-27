@@ -1,0 +1,18 @@
+# Ensure all text files use LF line endings
+* text=auto eol=lf
+
+# Treat these as binary so git won't try to diff them
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+
+# Treat lockfiles as text with LF (prevents Windows CRLF issues)
+package-lock.json text eol=lf
+yarn.lock text eol=lf
+
+# Keep shell and script files LF
+*.sh text eol=lf
+*.bash text eol=lf
+*.bat text eol=lf

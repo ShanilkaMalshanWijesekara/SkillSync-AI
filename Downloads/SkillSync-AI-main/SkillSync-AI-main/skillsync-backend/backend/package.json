@@ -1,0 +1,43 @@
+{
+  "name": "skillsync-backend",
+  "version": "1.0.0",
+  "description": "Backend API for SkillSync AI app",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "NODE_ENV=production node server.js",
+    "dev": "NODE_ENV=development nodemon server.js",
+    "lint": "eslint . --ext .js",
+    "format": "prettier --write .",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "keywords": [
+    "express",
+    "api",
+    "skillsync",
+    "backend",
+    "nodejs",
+    "rest"
+  ],
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.4.0",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
+    "typescript-eslint": "^8.44.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
